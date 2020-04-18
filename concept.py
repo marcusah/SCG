@@ -40,8 +40,7 @@
 # =============================================================================
 
 import random
-
-
+import sys
 
 class Player:
     def __init__(self,name, hand, ups, downs):
@@ -55,7 +54,19 @@ class Card:
         self.card_val = card_val
         self.value= value
         self.name =  card_val+ ' of ' + suit
-
+        
+# =============================================================================
+# def clear(): 
+#   
+#     # for windows 
+#     if name == 'nt': 
+#         _ = system('cls') 
+#   
+#     # for mac and linux(here, os.name is 'posix') 
+#     else: 
+#         _ = system('clear')
+# 
+# =============================================================================
 def Show_hand(full_deck):
     for x in full_deck:
         print x.name
@@ -152,29 +163,35 @@ def Draw(active_player, Deck):
         active_player.hand.append(Deck[-1])
         Deck.pop()
         Order(active_player.hand)
-        print active_player.name + "'s hand is:"
-        for x in active_player.hand:
-            print x.name
+
         
     else:
         pass
     
     
 def Play_Hand(active_player, Discard):
+############### Define new Params ############################################
     multi=0
-    square=0
+    
     multiple_list =[]
     new_hand = []
+    values = {'10':1, '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'J':11,'j':11,'Q':12,'q':12,'K':13,'k':13,'A':14, 'a':14}        
+
+##################### Ask for a Card ###################    
     while multi == 0:
         play_card = raw_input("What card value would you like to play? (2-A): ")
-        
-# =============================================================================
-#         if play_card > Discard[-1].value:
-# =============================================================================
+        my_value = values[play_card]
+
+################### Check the condition ################################
+        if Discard!=[]:
+            while my_value > Discard[-1].value:
+                 play_card = raw_input("Card must be less than on the discard. What card value would you like to play? (2-A): ")
+                 my_value = values[play_card]
+
             
         for x in active_player.hand:
             #print x.card_val
-            if x.card_val == play_card:
+            if x.value == my_value:
                 multi = multi + 1
                 multiple_list.append(x)
                 #active_player.hand.remove(x)
@@ -193,62 +210,179 @@ def Play_Hand(active_player, Discard):
                while how_many < 0:
                    how_manyS= raw_input("Error: Number requested less than 0. How many would you like to play? : ")
                    how_many = int(how_manyS)
+           
            for z in range(how_many):
                Discard.append(multiple_list[-1])
                multiple_list.pop()
-# =============================================================================
-#            for z in multiple_list:
-#                active_player.hand.append(z)
-# =============================================================================
+               
+       elif play_multi == 'n':
+           multi=1
+           how_many =1
+           Discard.append(multiple_list[-1])
+           multiple_list.pop()
+#           for x in active_player.hand:
+            #print x.name
+#            if x.value != my_value:
+#                new_hand.append(x) 
+           for x in multiple_list:
+               new_hand.append(x) 
                    
     elif multi == 1:
         how_many=1
         Discard.append(multiple_list[-1])
+        multiple_list.pop()
+        
     else:
         print "Error!!! That card does not exist in your hand!"
+   
     if how_many <multi:
-        
+# FIX THIS. Not discarding if 2 in hand         
         for x in active_player.hand:
             #print x.name
-            if x.card_val != play_card:
+            if x.value != my_value:
                 new_hand.append(x) 
-            if x.card_val == play_card:
-                if square< multi-how_many:
-                    new_hand.append(x)
-                    square =square+1
-    else:
+        for x in multiple_list:
+            new_hand.append(x) 
+                
+    elif how_many == multi:
         for x in active_player.hand:
-            print x.name
-            if x.card_val != play_card:
+            
+            if x.value != my_value:
                 new_hand.append(x)
+                
     active_player.hand = new_hand
     
+
+
+            
 def Start_game(num_players,current_players, Deck):
     Discard_pile =[]
-    round_num=1
-    Deal(num_players, current_players, Deck)
-    
-    for y in current_players:
-        print "Cards in " + y.name + " up:"
-        Show_hand(y.ups)
-        print "------------------------------------------------------"
 
-        print "Cards in " + y.name + " hand:"
-        Order(y.hand)
-        Show_hand(y.hand)
-        print '************************************************************'
+    round_num=1
+    
+    Deal(num_players, current_players, Deck)
+    won=0
+    
+# =============================================================================
+#     for y in current_players:
+#         print "Cards in " + y.name + " up:"
+#         Show_hand(y.ups)
+#         print "------------------------------------------------------"
+# 
+#         print "Cards in " + y.name + " hand:"
+#         Order(y.hand)
+#         Show_hand(y.hand)
+# =============================================================================
+    print '************************************************************'
         
-    while Deck !=[]:
-        print "------------------------------------------------------"
-        print "                       Round #"+ str(round_num) 
-        print "------------------------------------------------------"
-        
+    while won==0:
+
+    
         for x in current_players:
-            print x.name + "'s turn"
+            my_hand=''
+            my_discard =''
+            check=0
+            if Discard_pile !=[]:
+                
+                if Discard_pile[-1].value == 1:
+                    Discard_pile=[]
+                elif Discard_pile[-1].value==2:
+                    Discard_pile[-1].value=15
+                try:
+                    if Discard_pile[-1].value == Discard_pile[-2].value:
+                        if Discard_pile[-2].value == Discard_pile[-3].value:
+                            if Discard_pile[-3].value == Discard_pile[-4].value:
+                                Discard_pile=[]
+                except:
+                    pass
+            
+            #print x.name + "'s turn"
+            print '########################################################'
+            print '                           Round #'+ str(round_num) 
+            print '                      '+x.name + "'s turn"
+            print ''
+            print '  1: Play a card '
+            print '  2: Pick up the discard pile '
+            print '  3: Quit '
+            print ''
+            print ''
+            if Discard_pile !=[]:
+                for s in Discard_pile:
+                    my_discard =  my_discard +' | '+ s.name
+            
+                print "#  Discarded Pile: " ,my_discard + ' |'
+            
+                print ''
+                print ''           
+                
             Draw(x,Deck)
-            Play_Hand(x,Discard_pile)
+            for s in x.hand:
+                my_hand = my_hand +' | '+ s.name
+            print 'Player\'s hand: ' + my_hand +' |'
+            print '########################################################'
+            
+            
+            my_choice = raw_input('Choose an option: ')
+            if my_choice =='1':
+                check=1
+            elif my_choice =='2':
+                check=1
+            elif my_choice =='3':
+                check=1
+                
+            while check != 1:
+                print 'not a valid option'
+                my_choice = raw_input('Choose an option: ')
+                
+                if my_choice =='1':
+                    check=1
+                elif my_choice =='2':
+                    check=1
+                elif my_choice =='3':
+                    check=1
+                else:
+                    pass
+            if my_choice == '1':
+                if Discard_pile !=[]:
+                    for y in x.hand:
+                         if y.value <= Discard_pile[-1].value:
+                             Play_Hand(x,Discard_pile)
+                             break
+    
+                        
+                         else:
+                             print 'You must pick up the Discard!!!!!!'
+                             for z in Discard_pile:
+                                 if z.value == 15:
+                                     z.value = 2
+                                 x.hand.append(z)
+                             Order(x.hand)
+                             Discard_pile=[]
+                             break
+                else:
+                     Play_Hand(x,Discard_pile)
+                    
+            elif my_choice == '2':
+                 print 'You must pick up the Discard pile!!!!!!'
+                 for z in Discard_pile:
+                     if z.value == 15:
+                         z.value = 2
+                         x.hand.append(z)
+                 Order(x.hand)
+                 Discard_pile=[]
             print "------------------------------------------------------"
+            if x.downs==[]:
+                if x.hand==[]:
+                    print x.name + " WINS!!!!!!!!!!!!!!!!"
+                    won=1
+                else:
+                    pass
+            elif my_choice == '3':
+                sys.exit('Goodbye!')
+            
+                
         round_num = round_num + 1
+    
 
 
 def Main():
